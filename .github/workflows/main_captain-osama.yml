@@ -26,6 +26,10 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      # Debugging step: List all files to verify the correct path
+      - name: List all files for debugging
+        run: ls -R
+
       # Fetch flight data from Amadeus API and save it as part of the deployment package
       - name: Fetch flight data from Amadeus API
         env:
