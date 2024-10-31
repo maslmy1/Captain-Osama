@@ -24,25 +24,11 @@ jobs:
           source venv/bin/activate
           pip install -r requirements.txt
 
-      # Debugging step: List all files to verify the correct path (optional)
-      - name: List all files for debugging
-        run: ls -R
+      # Optional: Add step to run tests here (e.g., with pytest)
 
-      # Fetch flight data from Amadeus API and save it as part of the deployment package
-      - name: Fetch flight data from Amadeus API
-        env:
-          AMADEUS_API_KEY: ${{ secrets.AMADEUS_API_KEY }}
-          AMADEUS_API_SECRET: ${{ secrets.AMADEUS_API_SECRET }}
-        run: |
-          source venv/bin/activate
-          python data_ingestion/fetch_flights_amadeus.py
-
-      # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
-
+      # Package application for deployment
       - name: Zip artifact for deployment
-        run: |
-          source venv/bin/activate
-          zip release.zip ./* -r
+        run: zip release.zip ./* -r
 
       - name: Upload artifact for deployment jobs
         uses: actions/upload-artifact@v4
@@ -59,7 +45,7 @@ jobs:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     permissions:
-      id-token: write # This is required for requesting the JWT
+      id-token: write # Required for requesting the JWT
 
     steps:
       - name: Download artifact from build job
@@ -73,13 +59,14 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_AD71ED0FD5344F67BF5B7C9B7EFEB90B }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_DAC70905FFDE4D77A200C5942C6A8AA8 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_96B4CA89B7064B2EA7DC98371C685DCD }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID }}
+          client-secret: ${{ secrets.AZUREAPPSERVICE_CLIENTSECRET }}
 
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
         with:
-          app-name: 'captain-osama'
+          app-name: 'captain-osama'  # Replace with your Azure Web App name
           slot-name: 'Production'
