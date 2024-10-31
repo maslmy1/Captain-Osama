@@ -1,7 +1,3 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-# More info on Python, GitHub Actions, and Azure App Service: https://aka.ms/python-webapps-actions
-
 name: Build and deploy Python app to Azure Web App - captain-osama
 
 on:
@@ -29,7 +25,16 @@ jobs:
       
       - name: Install dependencies
         run: pip install -r requirements.txt
-        
+
+      # Fetch flight data from Amadeus API and save it as part of the deployment package
+      - name: Fetch flight data from Amadeus API
+        env:
+          AMADEUS_API_KEY: ${{ secrets.AMADEUS_API_KEY }}
+          AMADEUS_API_SECRET: ${{ secrets.AMADEUS_API_SECRET }}
+        run: |
+          source venv/bin/activate
+          python data_ingestion/fetch_flights_amadeus.py
+
       # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
 
       - name: Zip artifact for deployment
@@ -50,7 +55,7 @@ jobs:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     permissions:
-      id-token: write #This is required for requesting the JWT
+      id-token: write # This is required for requesting the JWT
 
     steps:
       - name: Download artifact from build job
@@ -61,13 +66,12 @@ jobs:
       - name: Unzip artifact for deployment
         run: unzip release.zip
 
-      
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_AD71ED0FD5344F67BF5B7C9B7EFEB90B }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_DAC70905FFDE4D77A200C5942C6A8AA8 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_96B4CA89B7064B2EA7DC98371C685DCD }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID }}
 
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v3
@@ -75,4 +79,3 @@ jobs:
         with:
           app-name: 'captain-osama'
           slot-name: 'Production'
-          
