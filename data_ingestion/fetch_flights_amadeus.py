@@ -1,8 +1,12 @@
+from flask import Flask, jsonify, request
 import requests
+import os
 
-# Amadeus credentials
-API_KEY = "9dkLBmBAzGWYNet9VVw4I8d2uGMGbplY"
-API_SECRET = "ECPDmDQgAl6ieuB0"
+app = Flask(__name__)
+
+# Amadeus API credentials retrieved from environment variables
+API_KEY = os.getenv("9dkLBmBAzGWYNet9VVw4I8d2uGMGbplY")
+API_SECRET = os.getenv("ECPDmDQgAl6ieuB0")
 
 # Step 1: Get the Access Token
 def get_access_token():
@@ -17,11 +21,17 @@ def get_access_token():
     response = requests.post(url, headers=headers, data=data)
     response.raise_for_status()
     access_token = response.json()["access_token"]
-    print("Access token obtained.")
     return access_token
 
 # Step 2: Fetch Flight Offers
-def fetch_flight_offers(access_token, origin, destination, departure_date, adults=1):
+@app.route("/flight-offers", methods=["GET"])
+def flight_offers():
+    origin = request.args.get("origin")
+    destination = request.args.get("destination")
+    departure_date = request.args.get("departure_date")
+    adults = request.args.get("adults", default=1, type=int)
+    
+    access_token = get_access_token()
     url = "https://test.api.amadeus.com/v2/shopping/flight-offers"
     headers = {"Authorization": f"Bearer {access_token}"}
     params = {
@@ -33,19 +43,8 @@ def fetch_flight_offers(access_token, origin, destination, departure_date, adult
 
     response = requests.get(url, headers=headers, params=params)
     response.raise_for_status()
-    print("Flight data fetched successfully.")
-    return response.json()
+    return jsonify(response.json())
 
+# Start the Flask application
 if __name__ == "__main__":
-    # Define search parameters
-    origin = "JFK"  # Origin airport code
-    destination = "LAX"  # Destination airport code
-    departure_date = "2024-12-20"  # Departure date (YYYY-MM-DD)
-    
-    # Authenticate and fetch data
-    token = get_access_token()
-    flight_data = fetch_flight_offers(token, origin, destination, departure_date)
-    
-    # Print flight data
-    print(flight_data)
-
+    app.run(host="0.0.0.0", port=5000)
