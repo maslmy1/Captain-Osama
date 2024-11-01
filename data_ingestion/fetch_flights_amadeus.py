@@ -2,7 +2,7 @@ from flask import Flask, jsonify, request
 import requests
 import os
 
-app = Flask(__name__)
+app = Flask(captain-osama)
 
 # Amadeus API credentials retrieved from environment variables
 API_KEY = os.getenv("9dkLBmBAzGWYNet9VVw4I8d2uGMGbplY")
