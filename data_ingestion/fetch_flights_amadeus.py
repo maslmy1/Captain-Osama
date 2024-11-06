@@ -2,11 +2,14 @@ from flask import Flask, jsonify, request
 import requests
 import os
 
-app = Flask(captain-osama)
+app = Flask(__name__)
 
 # Amadeus API credentials retrieved from environment variables
 API_KEY = os.getenv("9dkLBmBAzGWYNet9VVw4I8d2uGMGbplY")
 API_SECRET = os.getenv("ECPDmDQgAl6ieuB0")
+
+if not API_KEY or not API_SECRET:
+    raise ValueError("Missing Amadeus API credentials")
 
 # Step 1: Get the Access Token
 def get_access_token():
@@ -32,19 +35,3 @@ def flight_offers():
     adults = request.args.get("adults", default=1, type=int)
     
     access_token = get_access_token()
-    url = "https://test.api.amadeus.com/v2/shopping/flight-offers"
-    headers = {"Authorization": f"Bearer {access_token}"}
-    params = {
-        "originLocationCode": origin,
-        "destinationLocationCode": destination,
-        "departureDate": departure_date,
-        "adults": adults
-    }
-
-    response = requests.get(url, headers=headers, params=params)
-    response.raise_for_status()
-    return jsonify(response.json())
-
-# Start the Flask application
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
